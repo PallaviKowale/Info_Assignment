@@ -11,13 +11,11 @@ class CustomTableViewCell: UITableViewCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
-        // Configure the view for the selected state
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?)
@@ -33,35 +31,45 @@ class CustomTableViewCell: UITableViewCell {
     }
     
     func setupCell() {
+        let parentPadding : CGFloat = 5
+        let marginPadding : CGFloat = 10
+        let heightConst : CGFloat = 80
+        let widthConst : CGFloat = 80
+        let titleHeight : CGFloat = 20
+        
+        let subtitleRightPadding : CGFloat = 15
+        let subtitleBottomPadding : CGFloat = 20
+        
+        
         //1.
         cellParentView = UIView()
         self.addSubview(self.cellParentView!)
 
         cellParentView?.enableAutolayout()
-        cellParentView?.leadingMargin(pixel: 5)
-        cellParentView?.trailingMargin(pixel: 5)
-        cellParentView?.topMargin(pixel: 5)
-        cellParentView?.bottomMargin(pixel: 5)
+        cellParentView?.leadingMargin(pixel: parentPadding)
+        cellParentView?.trailingMargin(pixel: parentPadding)
+        cellParentView?.topMargin(pixel: parentPadding)
+        cellParentView?.bottomMargin(pixel: parentPadding)
         
         //2.
         displayImg = UIImageView()
         cellParentView?.addSubview(displayImg!)
         
         displayImg?.enableAutolayout()
-        displayImg?.leadingMargin(pixel: 10)
-        displayImg?.topMargin(pixel: 10)
-        displayImg?.fixHeight(pixel: 80)
-        displayImg?.fixWidth(pixel: 80)
+        displayImg?.leadingMargin(pixel: marginPadding)
+        displayImg?.topMargin(pixel: marginPadding)
+        displayImg?.fixHeight(pixel: heightConst)
+        displayImg?.fixWidth(pixel: widthConst)
         
         //3.
         titleLabel = UILabel()
         cellParentView?.addSubview(titleLabel!)
         
         titleLabel?.enableAutolayout()
-        titleLabel?.addToRight(view: self.displayImg!, pixel: 10)
-        titleLabel?.topMargin(pixel: 10)
-        titleLabel?.trailingMargin(pixel: 10)
-        titleLabel?.fixHeight(pixel: 20)
+        titleLabel?.addToRight(view: self.displayImg!, pixel: marginPadding)
+        titleLabel?.topMargin(pixel: marginPadding)
+        titleLabel?.trailingMargin(pixel: marginPadding)
+        titleLabel?.fixHeight(pixel: titleHeight)
         
         //4.
         subtitleLabel = UILabel()
@@ -69,11 +77,10 @@ class CustomTableViewCell: UITableViewCell {
         
         self.setMultilineLabel(label: self.subtitleLabel)
         subtitleLabel?.enableAutolayout()
-        subtitleLabel?.addToRight(view: self.displayImg!, pixel: 15)
-        subtitleLabel?.addToBelow(view: self.titleLabel!, pixel: 20)
-        subtitleLabel?.trailingMargin(pixel: 10)
-        subtitleLabel?.bottomMargin(pixel: 10)
-        //subtitleLabel?.fixHeight(pixel: 20)
+        subtitleLabel?.addToRight(view: self.displayImg!, pixel: subtitleRightPadding)
+        subtitleLabel?.addToBelow(view: self.titleLabel!, pixel: subtitleBottomPadding)
+        subtitleLabel?.trailingMargin(pixel: marginPadding)
+        subtitleLabel?.bottomMargin(pixel: marginPadding)
     }
     
     func setMultilineLabel(label: UILabel?) {

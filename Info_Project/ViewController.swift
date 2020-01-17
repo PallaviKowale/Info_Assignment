@@ -8,140 +8,140 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-    
-    
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NetworkOperationDataDelegate {
+   
+    var activityIndicatorObj : UIActivityIndicatorView?
     var tableToDisplay : UITableView?
+    var errorLabel : UILabel?
+    
     var webArr : [[String : Any]] = [[String : Any]]()
+    
+    let networkObj : NetworkUtil = NetworkUtil()
+    let cellConst : String = "CustomTableViewCell"
    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupDisplayTable()
-        parseData()
+        self.setupUI()
+        
+        networkObj.delegate = self
+        networkObj.parseData()
     }
     
-     func parseData() {
-        
-        
-        let session = URLSession.shared
-        var webUrl = "https://api.github.com/users/hadley/orgs"
-        ////webUrl = "https://dl.dropboxusercontent.com/s/2iodh4vg0eortkl/facts.json"
-        let url = URL(string: webUrl)!
-        
-       
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        let task = session.dataTask(with: url) { data, response, error in
-            
-            if error != nil || data == nil {
-                print("Client error!")
-                return
-            }
-            
-            guard let response = response as? HTTPURLResponse, (200...299).contains(response.statusCode) else {
-                print("Server error!")
-                return
-            }
-            
-                    guard let mime = response.mimeType, mime == "application/json" else {
-                        print("Wrong MIME type!")
-                        return
-                    }
-            
-            do {
-                
-                let json = try JSONSerialization.jsonObject(with: data!, options: JSONSerialization.ReadingOptions.allowFragments)
-                print("json data \(json)")
-                
-
-                
-                self.webArr = json as! [[String: Any]]
-                
-                DispatchQueue.main.async {
-                    self.tableToDisplay?.reloadData()
-
-                }
-                
-
-                
-            } catch {
-                print("JSON error: \(error.localizedDescription)")
-            }
+    func dataRecieved(response: AnyObject?) {
+        if response != nil
+        {
+            self.webArr = response as! [[String: Any]]
+            self.tableToDisplay?.reloadData()
+        }
+        else
+        {
+            self.errorLabel?.text = "No Data found"
+            self.errorLabel?.isHidden = false
         }
         
-        task.resume()
-        
     }
     
     
-    func setupDisplayTable() {
+    func setupUI() {
         
+        let constPadding : CGFloat = 10
+        let estimatedRowHeight : CGFloat = 170
+        let leftRightPadding : CGFloat = 0
+        
+        let activityWidthHeight : CGFloat = 80
+        let errorLblWidth : CGFloat = 150
+        let errorLblHeight : CGFloat = 30
+        
+        //1. Add Tableview
         tableToDisplay = UITableView()
         tableToDisplay?.backgroundColor = UIColor.white
         tableToDisplay?.delegate = self
         tableToDisplay?.dataSource = self
         tableToDisplay?.separatorStyle = .none
-        tableToDisplay?.estimatedRowHeight = 170
+        tableToDisplay?.estimatedRowHeight = estimatedRowHeight
         tableToDisplay?.rowHeight = UITableView.automaticDimension
-        //tableToDisplay?.rowHeight = 170
-        tableToDisplay?.contentInset = UIEdgeInsets(top: 10, left: 0, bottom: 10, right: 0)
-        tableToDisplay?.register(CustomTableViewCell.self, forCellReuseIdentifier: "CustomTableViewCell")
+        tableToDisplay?.contentInset = UIEdgeInsets(top: constPadding,
+                                                    left: leftRightPadding,
+                                                    bottom: constPadding,
+                                                    right: leftRightPadding)
+        tableToDisplay?.register(CustomTableViewCell.self,
+                                 forCellReuseIdentifier: cellConst)
         
         self.view.addSubview(tableToDisplay!)
         
         
         tableToDisplay?.enableAutolayout()
-        tableToDisplay?.leadingMargin(pixel: 10)
-        tableToDisplay?.trailingMargin(pixel: 10)
-        tableToDisplay?.topMargin(pixel: 10)
-        tableToDisplay?.bottomMargin(pixel: 10)
+        tableToDisplay?.leadingMargin(pixel: constPadding)
+        tableToDisplay?.trailingMargin(pixel: constPadding)
+        tableToDisplay?.topMargin(pixel: constPadding)
+        tableToDisplay?.bottomMargin(pixel: constPadding)
+        
+        //2. Add Activity indicator
+        activityIndicatorObj = UIActivityIndicatorView(style: .whiteLarge)
+        activityIndicatorObj?.startAnimating()
+        activityIndicatorObj?.color = UIColor.black
+       
+        
+        self.tableToDisplay?.addSubview(activityIndicatorObj!)
+        
+        activityIndicatorObj?.enableAutolayout()
+        activityIndicatorObj?.centerX()
+        activityIndicatorObj?.centerY()
+        activityIndicatorObj?.fixWidth(pixel: activityWidthHeight)
+        activityIndicatorObj?.fixHeight(pixel: activityWidthHeight)
+        
+        //3. Add Label
+        errorLabel = UILabel()
+        errorLabel?.textColor = UIColor.black
+        errorLabel?.text = ""
+        errorLabel?.isHidden = true
+        
+        self.tableToDisplay?.addSubview(errorLabel!)
+        
+        errorLabel?.enableAutolayout()
+        errorLabel?.centerX()
+        errorLabel?.centerY()
+        errorLabel?.fixWidth(pixel: errorLblWidth)
+        errorLabel?.fixHeight(pixel: errorLblHeight)
+        
     }
     
     //MARK: - UITableViewDatasource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return 3
+        if webArr.count > 0
+        {
+            return webArr.count
+        }
+        else
+        {
+            return 1
+        }
+       
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
-        let cell : CustomTableViewCell = tableView.dequeueReusableCell(withIdentifier: "CustomTableViewCell") as! CustomTableViewCell
+        let cell : CustomTableViewCell = tableView.dequeueReusableCell(withIdentifier: cellConst) as! CustomTableViewCell
         
-        if (self.webArr.count > 0)
+        if (self.webArr.count > 0 )
         {
+             self.errorLabel?.text = ""
             let cellData = self.webArr[indexPath.row]
             
-            cell.titleLabel?.text = cellData["login"] as! String
-            cell.subtitleLabel?.text = cellData["node_id"] as! String
+            cell.titleLabel?.text = cellData["login"] as? String
+            cell.subtitleLabel?.text = cellData["node_id"] as? String
             
             let imgUrl = cellData["avatar_url"] as! String
             cell.displayImg?.downloaded(from: imgUrl, contentMode: .scaleAspectFit)
+             self.activityIndicatorObj?.stopAnimating()
+            
         }
+        
  
+       
         return cell
     }
 }
 
-extension UIImageView {
-    func downloaded(from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {
-        contentMode = mode
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            guard
-                let httpURLResponse = response as? HTTPURLResponse, httpURLResponse.statusCode == 200,
-                let mimeType = response?.mimeType, mimeType.hasPrefix("image"),
-                let data = data, error == nil,
-                let image = UIImage(data: data)
-                else { return }
-            DispatchQueue.main.async() {
-                self.image = image
-            }
-            }.resume()
-    }
-    func downloaded(from link: String, contentMode mode: UIView.ContentMode = .scaleAspectFit) {
-        guard let url = URL(string: link) else { return }
-        downloaded(from: url, contentMode: mode)
-    }
-}
 
