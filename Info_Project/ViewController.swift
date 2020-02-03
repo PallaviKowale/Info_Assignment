@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NetworkOperationDataDelegate {
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NetworkOperationDelegate {
    
     var activityIndicatorObj : UIActivityIndicatorView?
     var tableToDisplay : UITableView?
@@ -16,7 +16,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     var webArr : [[String : Any]] = [[String : Any]]()
     
-    let networkObj : NetworkUtil = NetworkUtil()
+    let networkObj : NetworkOperationUtil = NetworkOperationUtil()
     let cellConst : String = "CustomTableViewCell"
    
     
